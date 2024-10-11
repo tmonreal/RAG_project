@@ -5,6 +5,8 @@ relevant document context.
 """
 from fastapi import FastAPI
 from pydantic import BaseModel
+from embeddings import create_embeddings, get_context
+from llm import ask_llm
 
 app = FastAPI()
 
@@ -14,4 +16,20 @@ class QuestionRequest(BaseModel):
 
 @app.post("/ask")
 async def ask_question(request: QuestionRequest):
-    return {"response": f"{request.user_name} asked: {request.question}"}
+    # Assuming the document path is known
+    document_path = 'C:\\Users\\HP\\OneDrive\\RAG_project\\data\\documento.docx'
+    
+    # Create embeddings if they don't exist
+    create_embeddings(document_path)
+    
+    # Get context for the question
+    context = get_context(request.question)
+    
+    # Generate response from LLM
+    response = ask_llm(request.question, context)
+    
+    return {
+        "user_name": request.user_name,
+        "question": request.question,
+        "response": response
+    }

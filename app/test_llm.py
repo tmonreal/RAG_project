@@ -1,10 +1,10 @@
-import os
 import numpy as np
 import chromadb
 import chromadb.config
 from llm import ask_llm 
 from embeddings import read_document, split_into_chunks, store_chunks_in_chroma
 from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
@@ -42,14 +42,14 @@ def get_context(question):
         return ""
     
     # Get the embedding for the question  
-    question_embedding = model.encode([question])[0]    
+    question_embedding = model.encode([question])   
     # Get stored embeddings and documents
     results = collection.get(include=['embeddings', 'documents']) 
     
     if results and results.get('documents'):
         # Calculate similarities
         embeddings = np.array(results['embeddings'])
-        similarities = np.dot(embeddings, question_embedding)  # Cosine similarity
+        similarities = cosine_similarity(embeddings, question_embedding)  # Cosine similarity
         # Get the index of the most similar document
         most_similar_idx = np.argmax(similarities)
         return results['documents'][most_similar_idx] # Return the most similar document as context
@@ -66,7 +66,7 @@ def test_ask_llm():
     # Create embeddings for document
     create_embeddings('./data/documento.docx')
 
-    question = "What is the name of the magical flower?"
+    question = "Quien es Zara?"
 
     context = get_context(question)  # Get context based on the question
     print(f"Context used: {context}")

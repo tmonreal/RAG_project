@@ -7,10 +7,12 @@ To only store in ChromaDB, run:
 """
 import os
 import argparse
+import numpy as np
 import chromadb
 import chromadb.config
 from docx import Document
 from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
 
 client = chromadb.Client(chromadb.config.Settings())
 collection = client.create_collection('document_chunks')
@@ -90,6 +92,65 @@ def view_stored_chunks():
             print(f"Embedding {i+1}: {embedding[:5]}...")
     else:
         print("No data retrieved from ChromaDB")
+
+def check_embeddings_exist():
+    """
+    Check if embeddings already exist in the ChromaDB collection.
+    Returns: bool: True if embeddings exist, False otherwise.
+    """
+    results = collection.get(include=['documents'])
+    return len(results['documents']) > 0 if results else False
+
+def create_embeddings(file_path):
+    """
+    Creates embeddings from the given file and stores them in ChromaDB.
+    Parameters:
+        - file_path: str: The path to the Word document.
+    Returns: None
+    """
+    if not check_embeddings_exist():
+        text = read_document(file_path)
+        chunks = split_into_chunks(text)
+        store_chunks_in_chroma(chunks)
+    else:
+        print("Embeddings already exist in ChromaDB.")
+
+def get_context(question):
+    """
+    Retrieves the most relevant context from the ChromaDB collection based on the question.
+    This function connects to a ChromaDB client, retrieves the stored document chunks and their embeddings,
+    and computes the cosine similarity between the question embedding and the embeddings of the stored 
+    document chunks. It returns the document that is most similar to the question.
+    Parameters:
+        question: str: The question for which relevant context is to be retrieved.
+    Returns:
+        str: The most relevant document from the ChromaDB collection that is similar to the question.
+             Returns an empty string if the collection does not exist or if no documents are found.
+    Raises:
+        chromadb.errors.InvalidCollectionException: If the specified collection 'document_chunks' does not exist.
+    """
+    client = chromadb.Client(chromadb.config.Settings())
+    
+    try:
+        collection = client.get_collection('document_chunks')
+    except chromadb.errors.InvalidCollectionException:
+        print("Collection 'document_chunks' does not exist.")
+        return ""
+    
+    # Get the embedding for the question  
+    question_embedding = model.encode([question])   
+    # Get stored embeddings and documents
+    results = collection.get(include=['embeddings', 'documents']) 
+    
+    if results and results.get('documents'):
+        # Calculate similarities
+        embeddings = np.array(results['embeddings'])
+        similarities = cosine_similarity(embeddings, question_embedding)  # Cosine similarity
+        # Get the index of the most similar document
+        most_similar_idx = np.argmax(similarities)
+        return results['documents'][most_similar_idx] # Return the most similar document as context
+    
+    return ""
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process document embeddings and optionally view stored chunks.")

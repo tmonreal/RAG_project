@@ -1,6 +1,7 @@
 # Challenge RAG with LLMs
 
-[![English](https://img.shields.io/badge/lang-English-blue.svg)](#english) [![Español](https://img.shields.io/badge/lang-Español-red.svg)](#español)
+[![English](https://img.shields.io/badge/lang-English-blue.svg)](https://github.com/tmonreal/RAG_project/blob/main/README.md)
+[![Español](https://img.shields.io/badge/lang-Español-red.svg)](https://github.com/tmonreal/RAG_project/blob/main/README.es.md)
 
 ---
 

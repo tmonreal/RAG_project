@@ -93,3 +93,45 @@ To run this project, make sure you have the following installed:
    ```bash
    pip install -r requirements.txt
 6. **Cohere API Key**: Make sure you have a [Cohere](https://cohere.com/) API Key.
+
+## Using Docker
+
+This project can be easily run using Docker. Below are the steps to build and run the Docker container, along with necessary modifications to ensure compatibility with Docker.
+
+### Prerequisites
+
+- Ensure that you have [Docker](https://www.docker.com/get-started) installed on your machine.
+
+### Steps to Run the Project in Docker
+
+1. **Clone the Repository**:
+   Clone the project repository to your local machine if you haven't done so already:
+   ```bash
+   git clone https://github.com/tmonreal/RAG_project.git
+   cd RAG_Project
+
+2. **Modify `api.py`**: Before building the Docker image, ensure you modify the import statements in `api.py` and the document path as follows:
+
+- Change lines 8 and 9:
+   ```bash
+   from .embeddings import create_embeddings, get_context, check_embeddings_exist
+   from .llm import ask_llm
+
+- Modify line 21 to:
+  ```bash
+  document_path = 'data/documento.docx'
+
+3. **Build the Docker Image**: Open your terminal and run the following command to build the Docker image:
+   ```bash
+   docker build -t rag_api:1.0 .
+
+4. **Run the Docker Container**: After the image has been built successfully, run the container with:
+   ```bash
+   docker run --env-file .env -p 8000:8000 rag_api:1.0
+
+- The `--env-file .env` option loads environment variables defined in the `.env` file (For Cohere API Key).
+- The `-p 8000:8000` option maps port 8000 on your local machine to port 8000 in the Docker container.
+
+5. **Access the API**: You can now access the FastAPI application at http://localhost:8000/docs.
+
+

@@ -93,3 +93,42 @@ Para ejecutar este proyecto, asegúrate de tener instalado lo siguiente:
   
 6. **Clave de API de Cohere**: Asegúrate de tener una clave de API de [Cohere](https://cohere.com/).
 
+## Uso de Docker
+
+Este proyecto se puede ejecutar fácilmente utilizando Docker. A continuación se presentan los pasos para construir y ejecutar el contenedor Docker, junto con las modificaciones necesarias para garantizar la compatibilidad con Docker.
+
+### Prerrequisitos
+
+- Asegúrate de tener [Docker](https://www.docker.com/get-started) instalado en tu máquina.
+
+### Pasos para Ejecutar el Proyecto en Docker
+
+1. **Clonar el Repositorio**:
+   Clona el repositorio del proyecto en tu máquina local si aún no lo has hecho:
+   ```bash
+   git clone https://github.com/tmonreal/RAG_project.git
+   cd RAG_Project
+
+2. **Modificar `api.py`**: Antes de construir la imagen Docker, asegúrate de modificar las declaraciones de importación en `api.py` y la ruta del documento de la siguiente manera:
+
+- Cambia las líneas 8 y 9:
+   ```bash
+   from .embeddings import create_embeddings, get_context, check_embeddings_exist
+   from .llm import ask_llm
+
+- Modifica la línea 21 a:
+  ```bash
+  document_path = 'data/documento.docx'
+
+3. **Construir la Imagen Docker**: Abrí tu terminal y ejecuta el siguiente comando para construir la imagen Docker:
+   ```bash
+   docker build -t rag_api:1.0 .
+
+4. **Ejecutar el Contenedor Docker**: Después de que la imagen se haya construido correctamente, ejecuta el contenedor con:
+   ```bash
+   docker run --env-file .env -p 8000:8000 rag_api:1.0
+
+- La opción `--env-file .env` carga las variables de entorno definidas en el archivo `.env` (para la clave de API de Cohere).
+- La opción `-p 8000:8000` mapea el puerto 8000 de tu máquina local al puerto 8000 en el contenedor Docker.
+
+5. **Acceder a la API**: Ahora podes acceder a la aplicación FastAPI en http://localhost:8000/docs.

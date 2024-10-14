@@ -8,6 +8,9 @@
 
 This project aims to develop a simple **RAG (Retrieval Augmented Generation)** solution that allows interaction with a **LLM (Large Language Model)** to generate answers based on a specific document. Users can ask questions via an API, and the system retrieves relevant context from the document using embeddings and a vector database, providing accurate and context-based answers.
 
+![image](https://github.com/user-attachments/assets/32f081ae-c27d-4a13-9f4b-ea5fac5f1c80)
+
+
 ## Components
 1. **API**: Created using **FastAPI**, it communicates with the LLM and receives user questions in JSON format.
 2. **LLM**: Using **Cohere**, this component answers the questions based on relevant document chunks.
@@ -76,7 +79,7 @@ You can use tools like Postman or curl to interact with the API.
   }
 - If the embeddings do not exist and `"create_embeddings": false`, the API will return an error message.
 
-## **Requirements:**
+## **Requirements**
 To run this project, make sure you have the following installed:
 
 1. **VS Code:** Recommended for ease of development.

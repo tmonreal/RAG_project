@@ -3,6 +3,7 @@ This file will interact with Cohere's LLM for generating responses.
 """
 import cohere
 import os
+import langdetect
 from dotenv import load_dotenv
 
 load_dotenv('.env')
@@ -11,6 +12,9 @@ if not api_key:
     raise ValueError("API key not found. Set the COHERE_API_KEY in your .env file.")
 
 co = cohere.Client(api_key)
+
+def detect_language(text):
+    return langdetect.detect(text)
 
 def ask_llm(question, context):
     """
@@ -22,11 +26,28 @@ def ask_llm(question, context):
     Returns:
         - str: The generated response from the LLM.
     """
-    prompt = f"Answer the question in the third person in one sentence with an emoji. Context: {context}. Question: {question}"
+
+    detected_language = detect_language(question)
+    prompt_templates = {
+    "es": "Responder la pregunta de forma breve en español, en **una sola oración**, utilizando el siguiente contexto. Incluir un emoji que resuma la respuesta: ¿{question}\n\n---\nContexto:\n{context}",
+    "en": "Answer the question briefly in English in **one sentence**, using the provided context. Include an emoji that summarizes the answer: {question}\n\n---\nContext:\n{context}"
+    }
+
+    # Use the detected language to select the appropriate prompt template
+    prompt = prompt_templates.get(detected_language, "Answer the question concisely in only **one sentence**, with an emoji that summarizes the answer. Use the same language as the question and the provided context to respond. \n\nQuestion: {question}.\n\n---\nContext:\n{context}").format(question=question, context=context)
     response = co.generate(
-        model='command-xlarge',  # TODO: choose suitable model
+        model='command-xlarge', 
         prompt=prompt,
-        max_tokens=30, # Maximum length of response is short
+        max_tokens=50, # Maximum length of response is short
         temperature=0 # Deterministic model: no randomness wanted
     )
-    return response.generations[0].text.strip()
+
+    generated_text = response.generations[0].text.strip()
+
+    # Post-process to ensure it only answes in one sentence
+    # TODO: This is a temporary solution due to time constraints; 
+    # consider implementing a more robust method to handle multi-sentence responses in the future.
+    if "\n" in generated_text:
+        return generated_text.split("\n")[0]
+    
+    return generated_text

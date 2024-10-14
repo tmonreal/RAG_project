@@ -117,15 +117,15 @@ def create_embeddings(file_path):
 
 def get_context(question):
     """
-    Retrieves the most relevant context from the ChromaDB collection based on the question.
+    Retrieves the 3 most relevant contexts from the ChromaDB collection based on the question.
     This function connects to a ChromaDB client, retrieves the stored document chunks and their embeddings,
     and computes the cosine similarity between the question embedding and the embeddings of the stored 
-    document chunks. It returns the document that is most similar to the question.
+    document chunks. It returns the 3 contexts that are most similar to the question.
     Parameters:
         question: str: The question for which relevant context is to be retrieved.
     Returns:
-        str: The most relevant document from the ChromaDB collection that is similar to the question.
-             Returns an empty string if the collection does not exist or if no documents are found.
+        str: The most relevant contexts from the ChromaDB collection based on similarity to the question.
+             Returns an empty list if the collection does not exist or if no documents are found.
     Raises:
         chromadb.errors.InvalidCollectionException: If the specified collection 'document_chunks' does not exist.
     """
@@ -145,12 +145,12 @@ def get_context(question):
     if results and results.get('documents'):
         # Calculate similarities
         embeddings = np.array(results['embeddings'])
-        similarities = cosine_similarity(embeddings, question_embedding)  # Cosine similarity
-        # Get the index of the most similar document
-        most_similar_idx = np.argmax(similarities)
-        return results['documents'][most_similar_idx] # Return the most similar document as context
+        similarities = cosine_similarity(embeddings, question_embedding) 
+        # Get the indices of the top 3 most similar contexts
+        top_indices = np.argsort(similarities.flatten())[-3:][::-1]
+        return [results['documents'][i] for i in top_indices]
     
-    return ""
+    return []
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process document embeddings and optionally view stored chunks.")
